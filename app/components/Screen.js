@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet, SafeAreaView } from "react-native";
+import { StyleSheet, SafeAreaView, StatusBar } from "react-native";
 
 function Screen({ children }) {
   return (
@@ -11,7 +11,7 @@ function Screen({ children }) {
 }
 
 const styles = StyleSheet.create({
-  container: {},
+  container: { flex: 1 },
 });
 
 export default Screen;

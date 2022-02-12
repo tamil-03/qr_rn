@@ -1,47 +1,62 @@
-import React, { useState, useEffect, useRef } from "react";
-import { StyleSheet, View, Text, TextInput, Button } from "react-native";
+import React, { useState, useEffect } from "react";
+import { StyleSheet, View, Text, Dimensions, Button } from "react-native";
 
-import qrApi from "../api/qr_data";
-import authStorage from "../auth/storage";
-import notifier from "../utilities/notifier";
+import Screen from "../components/Screen";
 
-function ActivationScreen({}) {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false);
-  const [code, setCode] = useState("");
+import { Camera } from "expo-camera";
+import { BarCodeScanner } from "expo-barcode-scanner";
+import useQR from "../hooks/useQR";
 
-  const getData = async () => {
-    setLoading(true);
-    setError(false);
+const { width } = Dimensions.get("window");
 
-    const [data, e] = await qrApi.getQrData(code);
+function ScannerScreen({}) {
+  const [cameraPermission, setCameraPermission] = useState("");
 
-    if (e) {
-    } else {
-      notifier.debug(data);
-      notifier.toastLong(JSON.stringify(data.data[0]));
-    }
+  const { getData, codeData, code, error, loading } = useQR();
 
-    setLoading(false);
+  const requestCameraPermission = async () => {
+    const { status } = await Camera.requestCameraPermissionsAsync();
+    setCameraPermission(status === "granted");
   };
 
+  const onCodeScanned = async (data) => {
+    const name = data.data;
+    getData(name);
+  };
+
+  useEffect(() => {
+    requestCameraPermission();
+    return () => {};
+  }, []);
+
+  if (!cameraPermission)
+    return (
+      <>
+        <Text>Requesting camera permission...</Text>
+        <Button title="Give Permissions" onPress={requestCameraPermission} />
+      </>
+    );
+
   return (
-    <View style={styles.container}>
-      <Text>QR Name</Text>
-      <TextInput
-        style={styles.input}
-        editable
-        maxLength={40}
-        value={code}
-        onChangeText={setCode}
-      />
-      <Button title="Get Data" onPress={getData} />
-    </View>
+    <Screen>
+      <View style={styles.container}>
+        <Text>QR Name</Text>
+        <BarCodeScanner
+          onBarCodeScanned={onCodeScanned}
+          style={{ width: width, height: width + (1 / 3) * width }}
+        />
+        <Text>CODE: {code}</Text>
+        <Text>Field 1: {codeData.field_1 || ""}</Text>
+        <Text>Field 1: {codeData.field_2 || ""}</Text>
+        <Text>Field 1: {codeData.field_3 || ""}</Text>
+        <Text>Field 1: {codeData.field_4 || ""}</Text>
+      </View>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {},
+  container: { flex: 1 },
   input: {
     height: 40,
     margin: 12,
@@ -50,4 +65,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ActivationScreen;
+export default ScannerScreen;
