@@ -33,7 +33,7 @@ const clearCache = async (key, item) => {
     await AsyncStorage.removeItem(prefix + key);
     return null;
   }
-  return null;
+  return item;
 };
 
 const clearAllCache = async () => {

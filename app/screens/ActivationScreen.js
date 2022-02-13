@@ -1,9 +1,12 @@
-import React, { useState, useEffect, useRef } from "react";
-import { StyleSheet, View, Text, TextInput, Button } from "react-native";
+import React, { useState } from "react";
+import { StyleSheet } from "react-native";
+import { Button, Center, Heading } from "native-base";
 
 import authApi from "../api/auth";
 import authStorage from "../auth/storage";
+import Screen from "../components/Screen";
 import notifier from "../utilities/notifier";
+import CodeInput from "./CodeInput";
 
 function ActivationScreen({ activator }) {
   const [activated, setActivated] = activator;
@@ -34,29 +37,35 @@ function ActivationScreen({ activator }) {
   };
 
   return (
-    <View style={styles.container}>
-      <Text>Activation Code</Text>
-      <TextInput
-        style={styles.input}
-        editable
-        maxLength={40}
-        value={activationCode}
-        onChangeText={setActivationCode}
-      />
-      {error && <Text>{error}</Text>}
-      <Button title="Activate" onPress={activate} />
-    </View>
+    <Screen>
+      <Center style={styles.container}>
+        <Heading>Activate Your Device</Heading>
+        <CodeInput
+          error={error}
+          placeholder="Activation Code"
+          value={activationCode}
+          onChangeText={setActivationCode}
+        />
+        <Button
+          _text={{
+            fontSize: "lg",
+          }}
+          size="lg"
+          isLoading={loading}
+          isLoadingText="Activating..."
+          variant="outline"
+          style={{ width: 200 }}
+          onPress={activate}
+        >
+          Activate
+        </Button>
+      </Center>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {},
-  input: {
-    height: 40,
-    margin: 12,
-    borderWidth: 1,
-    padding: 10,
-  },
+  container: { flex: 1 },
 });
 
 export default ActivationScreen;

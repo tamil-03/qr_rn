@@ -1,5 +1,6 @@
 import config from "../config";
 import authStorage from "./storage";
+import cache from "../utilities/cache";
 
 const getHeaders = async () => {
   const headers = new Headers();
@@ -24,13 +25,18 @@ const get = async ({ endpoint }) => {
     redirect: "follow",
   };
 
-  console.log(options.headers.get("Authorization"));
-
   const result = await call(url, options);
   return await result.json();
 };
 
 const post = async ({ endpoint, body }) => {
+  // Cache layer
+  const cached = await cache.get(endpoint);
+  if (cached) {
+    console.log("returning from cache");
+    return cached;
+  }
+
   const url = `${config.api.apiUrl}${endpoint}`;
   const options = {
     method: "POST",
@@ -44,7 +50,13 @@ const post = async ({ endpoint, body }) => {
   };
 
   const result = await call(url, options);
-  return await result.json();
+  const data = await result.json();
+
+  // Cache Layer
+  console.log("storing in cache");
+  await cache.store(endpoint, data);
+
+  return data;
 };
 
 export default client = {

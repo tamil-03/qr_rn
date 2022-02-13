@@ -12,14 +12,23 @@ const useQR = () => {
     setLoading(true);
     setError(false);
 
-    if (name === code || !name) return;
+    if (name === code || !name) return setLoading(false);
 
     const [data, e] = await qrApi.getQrData(name);
 
     if (e) {
     } else {
       setCode(name);
-      setCodeData(data.data[0]);
+      if (data && data.data && data.data.length > 0 && data.data[0]) {
+        const result = data.data[0];
+
+        if (typeof result === "object") {
+          setCodeData(result);
+        } else {
+          setCodeData({});
+          notifier.toastShort("Error occured, please restart the app");
+        }
+      }
     }
 
     setLoading(false);
@@ -29,7 +38,7 @@ const useQR = () => {
     getData();
   }, []);
 
-  return { code, codeData, loading, error, getData };
+  return { code, codeData, loading, error, getData, setLoading };
 };
 
 export default useQR;

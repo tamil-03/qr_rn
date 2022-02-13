@@ -1,5 +1,32 @@
 import client from "../auth/client";
+import authStorage from "../auth/storage";
 import { resolve } from "../utilities/calls";
+
+const refreshToken = async (refresh_token) => {
+  const call = client.post({
+    endpoint: "/method/frappe.integrations.oauth2.get_token",
+    body: {
+      grant_type: "refresh_token",
+      refresh_token: await authStorage.getRefreshToken(),
+    },
+  });
+
+  const [data, error] = await resolve(call);
+
+  console.log(data);
+
+  if (error) {
+    console.log("token refresh failed :" + e);
+    await authStorage.storeAccessToken("");
+    await authStorage.storeRefreshToken("");
+    return false;
+  }
+
+  await authStorage.storeAccessToken("");
+  await authStorage.storeRefreshToken("");
+  // console.log("refreshed access token : " + data.message.access_token);
+  return true;
+};
 
 const activate = async (activation_code) => {
   const call = client.post({
@@ -29,6 +56,7 @@ const initiate = async () => {
 export default authApi = {
   activate,
   initiate,
+  refreshToken,
 };
 
 /*
